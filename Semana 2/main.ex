@@ -201,4 +201,96 @@ defmodule Library do
     user = Enum.find(users, &(&1.id == user_id))
     if user, do: user.borrowed_books, else: []
   end
+
+  def run do
+    library = []
+    users = []
+
+    loop(library, users)
+  end
+
+  defp loop(library, users) do
+    IO.puts("""
+    1. Add book
+    2. List books
+    3. Add user
+    4. List users
+    5. Borrow book
+    6. Return book
+    7. Exit
+    """)
+
+    case IO.gets("Choose an option: ") |> String.trim() |> String.to_integer() do
+      1 ->
+        library = add_book_prompt(library)
+        loop(library, users)
+
+      2 ->
+        list_books(library) |> Enum.each(&IO.inspect/1)
+        loop(library, users)
+
+      3 ->
+        users = add_user_prompt(users)
+        loop(library, users)
+
+      4 ->
+        list_users(users) |> Enum.each(&IO.inspect/1)
+        loop(library, users)
+
+      5 ->
+        {library, users} = borrow_book_prompt(library, users)
+        loop(library, users)
+
+      6 ->
+        {library, users} = return_book_prompt(library, users)
+        loop(library, users)
+
+      7 ->
+        IO.puts("Goodbye!")
+
+      _ ->
+        IO.puts("Invalid option")
+        loop(library, users)
+    end
+  end
+
+  # Funciones de ayuda para el menú
+  defp add_book_prompt(library) do
+    title = IO.gets("Enter book title: ") |> String.trim()
+    author = IO.gets("Enter book author: ") |> String.trim()
+    isbn = IO.gets("Enter book ISBN: ") |> String.trim()
+    book = %Book{title: title, author: author, isbn: isbn}
+    add_book(library, book)
+  end
+
+  defp add_user_prompt(users) do
+    name = IO.gets("Enter user name: ") |> String.trim()
+    id = IO.gets("Enter user ID: ") |> String.trim()
+    user = %User{name: name, id: id}
+    add_user(users, user)
+  end
+
+  defp borrow_book_prompt(library, users) do
+    user_id = IO.gets("Enter user ID: ") |> String.trim()
+    isbn = IO.gets("Enter book ISBN: ") |> String.trim()
+    case borrow_book(library, users, user_id, isbn) do
+      {:ok, new_library, new_users} -> {new_library, new_users}
+      {:error, message} ->
+        IO.puts(message)
+        {library, users}
+    end
+  end
+
+  defp return_book_prompt(library, users) do
+    user_id = IO.gets("Enter user ID: ") |> String.trim()
+    isbn = IO.gets("Enter book ISBN: ") |> String.trim()
+    case return_book(library, users, user_id, isbn) do
+      {:ok, new_library, new_users} -> {new_library, new_users}
+      {:error, message} ->
+        IO.puts(message)
+        {library, users}
+    end
+  end
 end
+
+Library.run()

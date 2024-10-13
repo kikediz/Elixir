@@ -2,19 +2,19 @@ defmodule InventoryManager do
   defstruct inventory: [], cart: [], next_id: 1
 
   def run(state \\ %InventoryManager{}) do
-    IO.puts("1. Add product")
-    IO.puts("2. List products")
-    IO.puts("3. Increase stock")
-    IO.puts("4. Sell product")
-    IO.puts("5. View cart")
-    IO.puts("6. Checkout")
-    IO.puts("7. Exit")
+    IO.puts("1. Agregar producto")
+    IO.puts("2. Listar productos")
+    IO.puts("3. Incrementar inventario")
+    IO.puts("4. Vender producto")
+    IO.puts("5. Ver carrito")
+    IO.puts("6. Pagar y vaciar carrito")
+    IO.puts("7. Salir")
 
-    case IO.gets("Choose an option: ") |> String.trim() |> String.to_integer() do
+    case IO.gets("Escoge una opción: ") |> String.trim() |> String.to_integer() do
       1 ->
-        name = IO.gets("Enter product name: ") |> String.trim()
-        price = IO.gets("Enter product price: ") |> String.trim() |> String.to_float()
-        stock = IO.gets("Enter product stock: ") |> String.trim() |> String.to_integer()
+        name = IO.gets("Ingresa el nombre del producto: ") |> String.trim()
+        price = IO.gets("Ingresa el precio del producto: ") |> String.trim() |> parse_float()
+        stock = IO.gets("Ingresa el inventario existente del producto: ") |> String.trim() |> String.to_integer()
         state = add_product(state, name, price, stock)
         run(state)
 
@@ -23,14 +23,14 @@ defmodule InventoryManager do
         run(state)
 
       3 ->
-        id = IO.gets("Enter product ID to increase stock: ") |> String.trim() |> String.to_integer()
-        quantity = IO.gets("Enter quantity to add: ") |> String.trim() |> String.to_integer()
+        id = IO.gets("Ingresa el ID del producto para incrementar el inventario: ") |> String.trim() |> String.to_integer()
+        quantity = IO.gets("Ingresa la cantidad a agregar: ") |> String.trim() |> String.to_integer()
         state = increase_stock(state, id, quantity)
         run(state)
 
       4 ->
-        id = IO.gets("Enter product ID to sell: ") |> String.trim() |> String.to_integer()
-        quantity = IO.gets("Enter quantity to sell: ") |> String.trim() |> String.to_integer()
+        id = IO.gets("Ingresa el ID del producto a vender: ") |> String.trim() |> String.to_integer()
+        quantity = IO.gets("Ingresa la cantidad a vender: ") |> String.trim() |> String.to_integer()
         state = sell_product(state, id, quantity)
         run(state)
 
@@ -43,11 +43,18 @@ defmodule InventoryManager do
         run(state)
 
       7 ->
-        IO.puts("Goodbye!")
+        IO.puts("Adiós!")
 
       _ ->
-        IO.puts("Invalid option")
+        IO.puts("Opción inválida")
         run(state)
+    end
+  end
+
+  defp parse_float(input) do
+    case Float.parse(input) do
+      {value, _} -> value
+      :error -> IO.puts("Entrada flotante invalida"); 0.0
     end
   end
 
@@ -58,7 +65,7 @@ defmodule InventoryManager do
 
   defp list_products(inventory) do
     Enum.each(inventory, fn product ->
-      IO.puts("ID: #{product.id}, Name: #{product.name}, Price: #{product.price}, Stock: #{product.stock}")
+      IO.puts("ID: #{product.id}, Nombre: #{product.name}, Precio: #{product.price}, Stock: #{product.stock}")
     end)
   end
 
@@ -80,14 +87,14 @@ defmodule InventoryManager do
       updated_cart = [{id, quantity} | cart]
       %{state | inventory: [updated_product | updated_inventory], cart: updated_cart}
     else
-      IO.puts("Insufficient stock or invalid product ID")
+      IO.puts("Insuficiente stock o ID de producto inválido")
       state
     end
   end
 
   defp view_cart(cart) do
     Enum.each(cart, fn {id, quantity} ->
-      IO.puts("Product ID: #{id}, Quantity: #{quantity}")
+      IO.puts("Producto ID: #{id}, Cantidad: #{quantity}")
     end)
   end
 
@@ -96,7 +103,9 @@ defmodule InventoryManager do
       product = Enum.find(state.inventory, fn product -> product.id == id end)
       acc + product.price * quantity
     end)
-    IO.puts("Total amount: #{total}")
+    IO.puts("Total: #{total}")
     %{state | cart: []}
   end
 end
+
+InventoryManager.run()
